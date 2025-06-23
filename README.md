@@ -19,7 +19,14 @@ This Logic App monitors Microsoft Defender XDR for high severity incidents and s
 
 ## Deploy to Azure
 
-[![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2FYOUR-USERNAME%2FYOUR-REPO%2Fmain%2Fazuredeploy.json)
+> **Important**: This repository is ready to deploy! The template is hosted at:
+> `https://raw.githubusercontent.com/DataGuys/LogicApps/refs/heads/main/azuredeploy.json`
+>
+> **📖 For detailed step-by-step instructions, see [DEPLOYMENT.md](./DEPLOYMENT.md)**
+
+[![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2FDataGuys%2FLogicApps%2Frefs%2Fheads%2Fmain%2Fazuredeploy.json)
+
+**Direct Template URL**: `https://raw.githubusercontent.com/DataGuys/LogicApps/refs/heads/main/azuredeploy.json`
 
 ## Parameters
 
@@ -30,11 +37,11 @@ This Logic App monitors Microsoft Defender XDR for high severity incidents and s
 | teamsChannelId | Teams Channel ID where notifications will be sent | Required |
 | recurrenceInterval | Recurrence interval in minutes | 10 |
 | timeZone | Time zone for the recurrence schedule | Pacific Standard Time |
-| jiraBaseUrl | Base URL for Jira instance | https://your-company.atlassian.net |
+| jiraBaseUrl | Base URL for Jira instance | <https://your-company.atlassian.net> |
 | jiraProjectKey | Jira project key for security incidents | SEC |
-| desktopResponseUrl | URL for desktop response automation workflow | https://your-logic-app-url.com/... |
-| serverP2ResponseUrl | URL for server P2 response workflow | https://your-logic-app-url.com/... |
-| autoInvestigationUrl | URL for auto investigation workflow | https://your-logic-app-url.com/... |
+| desktopResponseUrl | URL for desktop response automation workflow | <https://your-logic-app-url.com/>... |
+| serverP2ResponseUrl | URL for server P2 response workflow | <https://your-logic-app-url.com/>... |
+| autoInvestigationUrl | URL for auto investigation workflow | <https://your-logic-app-url.com/>... |
 
 ## Post-Deployment Configuration
 
@@ -51,7 +58,8 @@ To get your Teams Group ID and Channel ID:
 
 1. In Teams, right-click on the channel and select "Get link to channel"
 2. The URL will contain the Group ID and Channel ID:
-   ```
+
+   ```url
    https://teams.microsoft.com/l/channel/19%3A{CHANNEL_ID}%40thread.tacv2/General?groupId={GROUP_ID}
    ```
 
