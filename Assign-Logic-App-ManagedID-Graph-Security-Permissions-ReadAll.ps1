@@ -2,9 +2,9 @@
 # Designed to copy-paste directly into Azure Cloud Shell
 
 # EDIT THESE VALUES BEFORE RUNNING:
-$managedIdentityObjectId = "e8ec5010-40ba-4cb8-8310-fa58f95f42f5"
-$ResourceGroupName = "mde-soc-dashboard"
-$SubscriptionId = "be32fada-aec2-4ccf-8e5d-cb0b3e41fb3c"  # Leave as $null to use current subscription, or set to "your-subscription-id"
+$managedIdentityObjectId = ""
+$ResourceGroupName = ""
+$SubscriptionId = ""  # Leave as $null to use current subscription, or set to "your-subscription-id"
 
 # Set subscription context if provided
 if ($SubscriptionId) {
