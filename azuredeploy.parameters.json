@@ -1,0 +1,36 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "logicAppName": {
+            "value": "xdr-high-incident-workflow"
+        },
+        "teamsGroupId": {
+            "value": "YOUR_TEAMS_GROUP_ID"
+        },
+        "teamsChannelId": {
+            "value": "YOUR_TEAMS_CHANNEL_ID"
+        },
+        "recurrenceInterval": {
+            "value": 10
+        },
+        "timeZone": {
+            "value": "Pacific Standard Time"
+        },
+        "jiraBaseUrl": {
+            "value": "https://your-company.atlassian.net"
+        },
+        "jiraProjectKey": {
+            "value": "SEC"
+        },
+        "desktopResponseUrl": {
+            "value": "https://your-logic-app-url.com/workflows/desktop-response-automation/triggers/manual/paths/invoke"
+        },
+        "serverP2ResponseUrl": {
+            "value": "https://your-logic-app-url.com/workflows/server-p2-response/triggers/manual/paths/invoke"
+        },
+        "autoInvestigationUrl": {
+            "value": "https://your-logic-app-url.com/automate/investigate"
+        }
+    }
+}
