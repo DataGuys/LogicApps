@@ -373,6 +373,17 @@
                         "foreach": "@items('For_each_High_Incident')?['alerts']",
                         "actions": {
                             "Check_Alert_Date": {
+                                "type": "If",
+                                "expression": {
+                                    "and": [
+                                        {
+                                            "equals": [
+                                                "@formatDateTime(items('For_each_Alert')?['createdDateTime'], 'yyyy-MM-dd')",
+                                                "@formatDateTime(items('For_each_High_Incident')?['createdDateTime'], 'yyyy-MM-dd')"
+                                            ]
+                                        }
+                                    ]
+                                },
                                 "actions": {
                                     "Append_Alert_Details": {
                                         "type": "AppendToStringVariable",
@@ -483,20 +494,12 @@
                                         "inputs": "@{if(empty(items('For_each_Alert')?['mitreTechniques']), '', concat('  MITRE: ', join(items('For_each_Alert')?['mitreTechniques'], ', ')))}"
                                     },
                                     "Append_MITRE_if_exists": {
-                                        "actions": {
-                                            "Append_MITRE_String": {
-                                                "type": "AppendToStringVariable",
-                                                "inputs": {
-                                                    "name": "EvidenceTimeline",
-                                                    "value": "@{outputs('Handle_MITRE_Techniques')}\n"
-                                                }
-                                            }
-                                        },
                                         "runAfter": {
                                             "Handle_MITRE_Techniques": [
                                                 "Succeeded"
                                             ]
                                         },
+                                        "type": "If",
                                         "expression": {
                                             "and": [
                                                 {
@@ -509,7 +512,15 @@
                                                 }
                                             ]
                                         },
-                                        "type": "If"
+                                        "actions": {
+                                            "Append_MITRE_String": {
+                                                "type": "AppendToStringVariable",
+                                                "inputs": {
+                                                    "name": "EvidenceTimeline",
+                                                    "value": "@{outputs('Handle_MITRE_Techniques')}\n"
+                                                }
+                                            }
+                                        }
                                     },
                                     "Add_Alert_Separator": {
                                         "runAfter": {
@@ -526,18 +537,7 @@
                                 },
                                 "else": {
                                     "actions": {}
-                                },
-                                "expression": {
-                                    "and": [
-                                        {
-                                            "equals": [
-                                                "@formatDateTime(items('For_each_Alert')?['createdDateTime'], 'yyyy-MM-dd')",
-                                                "@formatDateTime(items('For_each_High_Incident')?['createdDateTime'], 'yyyy-MM-dd')"
-                                            ]
-                                        }
-                                    ]
-                                },
-                                "type": "If"
+                                }
                             }
                         },
                         "runAfter": {
@@ -548,6 +548,22 @@
                         "type": "Foreach"
                     },
                     "Check_If_Evidence_Exists": {
+                        "runAfter": {
+                            "For_each_Alert": [
+                                "Succeeded"
+                            ]
+                        },
+                        "type": "If",
+                        "expression": {
+                            "and": [
+                                {
+                                    "greater": [
+                                        "@length(variables('EvidenceTimeline'))",
+                                        0
+                                    ]
+                                }
+                            ]
+                        },
                         "actions": {
                             "Post_message": {
                                 "type": "ApiConnection",
@@ -561,7 +577,7 @@
                                     "body": {
                                         "subject": "🚨 HIGH SEVERITY INCIDENT: @{coalesce(items('For_each_High_Incident')?['displayName'], concat('Incident ', items('For_each_High_Incident')?['id']))}",
                                         "body": {
-                                            "content": "<div style='font-family: Arial, sans-serif;'>\n<h2 style='color: #d9534f;'>🚨 HIGH SEVERITY INCIDENT DETECTED</h2>\n\n<div style='background-color: #f5f5f5; padding: 15px; border-radius: 5px; margin-bottom: 20px;'>\n<h3>Incident Details</h3>\n<table style='width: 100%;'>\n<tr><td style='font-weight: bold; width: 150px;'>Incident:</td><td>@{coalesce(items('For_each_High_Incident')?['displayName'], 'Unnamed Incident')}</td></tr>\n<tr><td style='font-weight: bold;'>ID:</td><td>@{items('For_each_High_Incident')?['id']}</td></tr>\n<tr><td style='font-weight: bold;'>Severity:</td><td><span style='color: #d9534f; font-weight: bold;'>@{items('For_each_High_Incident')?['severity']}</span></td></tr>\n<tr><td style='font-weight: bold;'>Status:</td><td>@{items('For_each_High_Incident')?['status']}</td></tr>\n<tr><td style='font-weight: bold;'>Created:</td><td>@{formatDateTime(items('For_each_High_Incident')?['createdDateTime'], 'yyyy-MM-dd hh:mm tt')}</td></tr>\n<tr><td style='font-weight: bold;'>Last Updated:</td><td>@{formatDateTime(items('For_each_High_Incident')?['lastUpdateDateTime'], 'yyyy-MM-dd hh:mm tt')}</td></tr>\n<tr><td style='font-weight: bold;'>Assigned To:</td><td>@{coalesce(items('For_each_High_Incident')?['assignedTo'], 'Unassigned')}</td></tr>\n<tr><td style='font-weight: bold;'>Classification:</td><td>@{coalesce(items('For_each_High_Incident')?['classification'], 'Unclassified')}</td></tr>\n</table>\n</div>\n\n<div style='background-color: #f5f5f5; padding: 15px; border-radius: 5px; margin-bottom: 20px;'>\n<p><strong>Description:</strong> @{coalesce(items('For_each_High_Incident')?['description'], items('For_each_High_Incident')?['summary'], 'No description available')}</p>\n<p><strong>Last Modified By:</strong> @{coalesce(items('For_each_High_Incident')?['lastModifiedBy'], 'System')}</p>\n<p><strong>Determination:</strong> @{coalesce(items('For_each_High_Incident')?['determination'], 'Under Investigation')}</p>\n</div>\n\n<div style='background-color: #e8f5e9; padding: 15px; border-radius: 5px; margin-bottom: 20px;'>\n<h3>🔎 Attack Story Timeline</h3>\n<pre style='white-space: pre-wrap; font-family: Consolas, monospace;'>@{variables('EvidenceTimeline')}</pre>\n</div>\n\n<div style='margin-top: 20px; background-color: #f8f9fa; padding: 20px; border-radius: 8px; border: 1px solid #e0e0e0;'>\n<h4 style='margin-top: 0; color: #fff;'>Actions:</h4>\n<a href='@{coalesce(items('For_each_High_Incident')?['incidentWebUrl'], concat('https://security.microsoft.com/incidents/', items('For_each_High_Incident')?['id']))}' style='background-color: #0066cc; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: block; margin-bottom: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); text-align: center;'>🔗 View Incident Details</a>\n<a href='https://security.microsoft.com/incidents/@{items('For_each_High_Incident')?['id']}' style='background-color: #0066cc; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: block; margin-bottom: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); text-align: center;'>📋 Open SIEM Dashboard</a>\n<a href='https://placeholder-jira-url.com/create?projectKey=SEC&summary=@{encodeUriComponent(concat('Security Incident: ', coalesce(items('For_each_High_Incident')?['displayName'], 'Incident ', items('For_each_High_Incident')?['id'])))}&description=@{encodeUriComponent(concat('Incident ID: ', items('For_each_High_Incident')?['id']))}' style='background-color: #6c757d; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: block; margin-bottom: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); text-align: center;'>📝 Create Jira Issue</a>\n<a href='https://placeholder-logic-app-url.com/workflows/desktop-response-automation/triggers/manual/paths/invoke?incidentId=@{items('For_each_High_Incident')?['id']}' style='background-color: #dc3545; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: block; margin-bottom: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); text-align: center;'>🖥️ Run Desktop Response</a>\n<a href='https://placeholder-investigation-url.com/automate/investigate?incidentId=@{items('For_each_High_Incident')?['id']}' style='background-color: #28a745; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: block; box-shadow: 0 2px 4px rgba(0,0,0,0.1); text-align: center;'>🔍 Start Auto Investigation</a>\n</div>\n</div>",
+                                            "content": "<div style='font-family: Arial, sans-serif;'>\n<h2 style='color: #d9534f;'>🚨 HIGH SEVERITY INCIDENT DETECTED</h2>\n\n<div style='background-color: #f5f5f5; padding: 15px; border-radius: 5px; margin-bottom: 20px;'>\n<h3>Incident Details</h3>\n<table style='width: 100%;'>\n<tr><td style='font-weight: bold; width: 150px;'>Incident:</td><td>@{coalesce(items('For_each_High_Incident')?['displayName'], 'Unnamed Incident')}</td></tr>\n<tr><td style='font-weight: bold;'>ID:</td><td>@{items('For_each_High_Incident')?['id']}</td></tr>\n<tr><td style='font-weight: bold;'>Severity:</td><td><span style='color: #d9534f; font-weight: bold;'>@{items('For_each_High_Incident')?['severity']}</span></td></tr>\n<tr><td style='font-weight: bold;'>Status:</td><td>@{items('For_each_High_Incident')?['status']}</td></tr>\n<tr><td style='font-weight: bold;'>Created:</td><td>@{formatDateTime(items('For_each_High_Incident')?['createdDateTime'], 'yyyy-MM-dd hh:mm tt')}</td></tr>\n<tr><td style='font-weight: bold;'>Last Updated:</td><td>@{formatDateTime(items('For_each_High_Incident')?['lastUpdateDateTime'], 'yyyy-MM-dd hh:mm tt')}</td></tr>\n<tr><td style='font-weight: bold;'>Assigned To:</td><td>@{coalesce(items('For_each_High_Incident')?['assignedTo'], 'Unassigned')}</td></tr>\n<tr><td style='font-weight: bold;'>Classification:</td><td>@{coalesce(items('For_each_High_Incident')?['classification'], 'Unclassified')}</td></tr>\n</table>\n</div>\n\n<div style='background-color: #f5f5f5; padding: 15px; border-radius: 5px; margin-bottom: 20px;'>\n<p><strong>Description:</strong> @{coalesce(items('For_each_High_Incident')?['description'], items('For_each_High_Incident')?['summary'], 'No description available')}</p>\n<p><strong>Last Modified By:</strong> @{coalesce(items('For_each_High_Incident')?['lastModifiedBy'], 'System')}</p>\n<p><strong>Determination:</strong> @{coalesce(items('For_each_High_Incident')?['determination'], 'Under Investigation')}</p>\n</div>\n\n<div style='background-color: #e8f5e9; padding: 15px; border-radius: 5px; margin-bottom: 20px;'>\n<h3>🔎 Attack Story Timeline</h3>\n<pre style='white-space: pre-wrap; font-family: Consolas, monospace;'>@{variables('EvidenceTimeline')}</pre>\n</div>\n\n<div style='margin-top: 20px; background-color: #f8f9fa; padding: 20px; border-radius: 8px; border: 1px solid #e0e0e0;'>\n<h4 style='margin-top: 0; color: #fff;'>Actions:</h4>\n<a href='@{coalesce(items('For_each_High_Incident')?['incidentWebUrl'], concat('https://security.microsoft.com/incidents/', items('For_each_High_Incident')?['id']))}' style='background-color: #0066cc; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: block; margin-bottom: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); text-align: center;'>🔗 View Incident Details</a>\n<a href='https://security.microsoft.com/incidents/@{items('For_each_High_Incident')?['id']}' style='background-color: #0066cc; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: block; margin-bottom: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); text-align: center;'>📋 Open SIEM Dashboard</a>\n<a href='https://placeholder-jira-url.com/create?projectKey=SEC&summary=@{encodeUriComponent(concat('Security Incident: ', coalesce(items('For_each_High_Incident')?['displayName'], 'Incident ', items('For_each_High_Incident')?['id'])))}&description=@{encodeUriComponent(concat('Incident ID: ', items('For_each_High_Incident')?['id']))}' style='background-color: #6c757d; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: block; margin-bottom: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); text-align: center;'>📝 Create Jira Issue</a>\n<a href='https://placeholder-logic-app-url.com/workflows/desktop-response-automation/triggers/manual/paths/invoke?incidentId=@{items('For_each_High_Incident')?['id']}' style='background-color: #dc3545; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: block; margin-bottom: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); text-align: center;'>🖥️ Run Desktop Response</a>\n<a href='https://placeholder-p2-server-url.com/workflows/server-p2-response/triggers/manual/paths/invoke?incidentId=@{items('For_each_High_Incident')?['id']}' style='background-color: #ffc107; color: #212529; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: block; margin-bottom: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); text-align: center;'>🖧 Start P2 for Servers</a>\n<a href='https://placeholder-investigation-url.com/automate/investigate?incidentId=@{items('For_each_High_Incident')?['id']}' style='background-color: #28a745; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: block; box-shadow: 0 2px 4px rgba(0,0,0,0.1); text-align: center;'>🔍 Start Auto Investigation</a>\n</div>\n</div>",
                                             "contentType": "html"
                                         },
                                         "groupId": "be712335-429a-4274-a3de-d582eeec0906",
@@ -571,25 +587,9 @@
                                 }
                             }
                         },
-                        "runAfter": {
-                            "For_each_Alert": [
-                                "Succeeded"
-                            ]
-                        },
                         "else": {
                             "actions": {}
-                        },
-                        "expression": {
-                            "and": [
-                                {
-                                    "greater": [
-                                        "@length(variables('EvidenceTimeline'))",
-                                        0
-                                    ]
-                                }
-                            ]
-                        },
-                        "type": "If"
+                        }
                     }
                 },
                 "runAfter": {
