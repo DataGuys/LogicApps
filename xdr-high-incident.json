@@ -1,0 +1,623 @@
+{
+    "definition": {
+        "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+        "contentVersion": "1.0.0.0",
+        "triggers": {
+            "Recurrence": {
+                "recurrence": {
+                    "interval": 10,
+                    "frequency": "Minute",
+                    "timeZone": "Pacific Standard Time"
+                },
+                "evaluatedRecurrence": {
+                    "interval": 10,
+                    "frequency": "Minute",
+                    "timeZone": "Pacific Standard Time"
+                },
+                "type": "Recurrence",
+                "conditions": []
+            }
+        },
+        "actions": {
+            "Get_High_Severity_Incidents": {
+                "runAfter": {},
+                "type": "Http",
+                "inputs": {
+                    "uri": "https://graph.microsoft.com/v1.0/security/incidents?$filter=severity%20eq%20'high'%20and%20createdDateTime%20ge%20@{formatDateTime(addDays(utcNow(), -1), 'yyyy-MM-dd')}T00:00:00Z&$expand=alerts",
+                    "method": "GET",
+                    "headers": {
+                        "Content-Type": "application/json",
+                        "Accept": "application/json"
+                    },
+                    "authentication": {
+                        "type": "ManagedServiceIdentity",
+                        "audience": "https://graph.microsoft.com"
+                    }
+                }
+            },
+            "Parse_Incidents_Response": {
+                "runAfter": {
+                    "Get_High_Severity_Incidents": [
+                        "Succeeded"
+                    ]
+                },
+                "type": "ParseJson",
+                "inputs": {
+                    "content": "@body('Get_High_Severity_Incidents')",
+                    "schema": {
+                        "type": "object",
+                        "properties": {
+                            "value": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "string"
+                                        },
+                                        "displayName": {
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "incidentWebUrl": {
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "severity": {
+                                            "type": "string"
+                                        },
+                                        "status": {
+                                            "type": "string"
+                                        },
+                                        "createdDateTime": {
+                                            "type": "string"
+                                        },
+                                        "lastUpdateDateTime": {
+                                            "type": "string"
+                                        },
+                                        "assignedTo": {
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "classification": {
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "determination": {
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "redirectIncidentId": {
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "tenantId": {
+                                            "type": "string"
+                                        },
+                                        "summary": {
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "description": {
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "lastModifiedBy": {
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "resolvingComment": {
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        },
+                                        "customTags": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "systemTags": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "alerts": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "string"
+                                                    },
+                                                    "title": {
+                                                        "type": [
+                                                            "string",
+                                                            "null"
+                                                        ]
+                                                    },
+                                                    "createdDateTime": {
+                                                        "type": "string"
+                                                    },
+                                                    "category": {
+                                                        "type": [
+                                                            "string",
+                                                            "null"
+                                                        ]
+                                                    },
+                                                    "severity": {
+                                                        "type": [
+                                                            "string",
+                                                            "null"
+                                                        ]
+                                                    },
+                                                    "mitreTechniques": {
+                                                        "type": "array",
+                                                        "items": {
+                                                            "type": "string"
+                                                        }
+                                                    },
+                                                    "evidence": {
+                                                        "type": "array",
+                                                        "items": {
+                                                            "type": "object",
+                                                            "properties": {
+                                                                "@@odata.type": {
+                                                                    "type": "string"
+                                                                },
+                                                                "createdDateTime": {
+                                                                    "type": "string"
+                                                                },
+                                                                "deviceDnsName": {
+                                                                    "type": [
+                                                                        "string",
+                                                                        "null"
+                                                                    ]
+                                                                },
+                                                                "riskScore": {
+                                                                    "type": [
+                                                                        "string",
+                                                                        "null"
+                                                                    ]
+                                                                },
+                                                                "fileDetails": {
+                                                                    "type": [
+                                                                        "object",
+                                                                        "null"
+                                                                    ],
+                                                                    "properties": {
+                                                                        "fileName": {
+                                                                            "type": [
+                                                                                "string",
+                                                                                "null"
+                                                                            ]
+                                                                        },
+                                                                        "filePath": {
+                                                                            "type": [
+                                                                                "string",
+                                                                                "null"
+                                                                            ]
+                                                                        }
+                                                                    }
+                                                                },
+                                                                "processCommandLine": {
+                                                                    "type": [
+                                                                        "string",
+                                                                        "null"
+                                                                    ]
+                                                                },
+                                                                "imageFile": {
+                                                                    "type": [
+                                                                        "object",
+                                                                        "null"
+                                                                    ],
+                                                                    "properties": {
+                                                                        "fileName": {
+                                                                            "type": [
+                                                                                "string",
+                                                                                "null"
+                                                                            ]
+                                                                        }
+                                                                    }
+                                                                },
+                                                                "userAccount": {
+                                                                    "type": [
+                                                                        "object",
+                                                                        "null"
+                                                                    ],
+                                                                    "properties": {
+                                                                        "displayName": {
+                                                                            "type": [
+                                                                                "string",
+                                                                                "null"
+                                                                            ]
+                                                                        },
+                                                                        "accountName": {
+                                                                            "type": [
+                                                                                "string",
+                                                                                "null"
+                                                                            ]
+                                                                        },
+                                                                        "userSid": {
+                                                                            "type": [
+                                                                                "string",
+                                                                                "null"
+                                                                            ]
+                                                                        }
+                                                                    }
+                                                                },
+                                                                "registryKey": {
+                                                                    "type": [
+                                                                        "string",
+                                                                        "null"
+                                                                    ]
+                                                                },
+                                                                "registryHive": {
+                                                                    "type": [
+                                                                        "string",
+                                                                        "null"
+                                                                    ]
+                                                                },
+                                                                "url": {
+                                                                    "type": [
+                                                                        "string",
+                                                                        "null"
+                                                                    ]
+                                                                },
+                                                                "verdict": {
+                                                                    "type": [
+                                                                        "string",
+                                                                        "null"
+                                                                    ]
+                                                                },
+                                                                "detectionStatus": {
+                                                                    "type": [
+                                                                        "string",
+                                                                        "null"
+                                                                    ]
+                                                                }
+                                                            }
+                                                        }
+                                                    },
+                                                    "comments": {
+                                                        "type": "array"
+                                                    }
+                                                },
+                                                "required": [
+                                                    "id",
+                                                    "severity",
+                                                    "status",
+                                                    "createdDateTime",
+                                                    "tenantId",
+                                                    "lastUpdateDateTime"
+                                                ]
+                                            }
+                                        },
+                                        "lastModifiedDateTime": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "id",
+                                        "severity",
+                                        "status",
+                                        "createdDateTime",
+                                        "tenantId",
+                                        "lastUpdateDateTime"
+                                    ]
+                                }
+                            }
+                        },
+                        "required": [
+                            "value"
+                        ]
+                    }
+                }
+            },
+            "Initialize_variables": {
+                "runAfter": {
+                    "Parse_Incidents_Response": [
+                        "Succeeded"
+                    ]
+                },
+                "type": "InitializeVariable",
+                "inputs": {
+                    "variables": [
+                        {
+                            "name": "EvidenceTimeline",
+                            "type": "string"
+                        }
+                    ]
+                }
+            },
+            "For_each_High_Incident": {
+                "foreach": "@body('Parse_Incidents_Response')?['value']",
+                "actions": {
+                    "Reset_EvidenceTimeline": {
+                        "type": "SetVariable",
+                        "inputs": {
+                            "name": "EvidenceTimeline",
+                            "value": ""
+                        }
+                    },
+                    "Initialize_MITRE_String": {
+                        "runAfter": {
+                            "Reset_EvidenceTimeline": [
+                                "Succeeded"
+                            ]
+                        },
+                        "type": "Compose",
+                        "inputs": ""
+                    },
+                    "For_each_Alert": {
+                        "foreach": "@items('For_each_High_Incident')?['alerts']",
+                        "actions": {
+                            "Check_Alert_Date": {
+                                "actions": {
+                                    "Append_Alert_Details": {
+                                        "type": "AppendToStringVariable",
+                                        "inputs": {
+                                            "name": "EvidenceTimeline",
+                                            "value": "• Alert: @{items('For_each_Alert')?['title']}\n  Time: @{formatDateTime(items('For_each_Alert')?['createdDateTime'], 'G')}\n  Severity: @{items('For_each_Alert')?['severity']}\n  Category: @{coalesce(items('For_each_Alert')?['category'], 'Unknown')}\n  Threat: @{coalesce(items('For_each_Alert')?['threatDisplayName'], 'Unknown')}\n"
+                                        }
+                                    },
+                                    "For_each_Evidence": {
+                                        "foreach": "@items('For_each_Alert')?['evidence']",
+                                        "actions": {
+                                            "Switch_on_Evidence_Type": {
+                                                "cases": {
+                                                    "#microsoft.graph.security.deviceEvidence": {
+                                                        "case": "#microsoft.graph.security.deviceEvidence",
+                                                        "actions": {
+                                                            "Append_Device_Evidence": {
+                                                                "type": "AppendToStringVariable",
+                                                                "inputs": {
+                                                                    "name": "EvidenceTimeline",
+                                                                    "value": "  - Device: @{items('For_each_Evidence')?['deviceDnsName']} (Risk: @{coalesce(items('For_each_Evidence')?['riskScore'], 'N/A')})\n"
+                                                                }
+                                                            }
+                                                        }
+                                                    },
+                                                    "#microsoft.graph.security.fileEvidence": {
+                                                        "case": "#microsoft.graph.security.fileEvidence",
+                                                        "actions": {
+                                                            "Append_File_Evidence": {
+                                                                "type": "AppendToStringVariable",
+                                                                "inputs": {
+                                                                    "name": "EvidenceTimeline",
+                                                                    "value": "  - File: @{items('For_each_Evidence')?['fileDetails']?['fileName']} (Status: @{coalesce(items('For_each_Evidence')?['detectionStatus'], 'Unknown')}, Verdict: @{coalesce(items('For_each_Evidence')?['verdict'], 'Unknown')})\n"
+                                                                }
+                                                            }
+                                                        }
+                                                    },
+                                                    "#microsoft.graph.security.processEvidence": {
+                                                        "case": "#microsoft.graph.security.processEvidence",
+                                                        "actions": {
+                                                            "Append_Process_Evidence": {
+                                                                "type": "AppendToStringVariable",
+                                                                "inputs": {
+                                                                    "name": "EvidenceTimeline",
+                                                                    "value": "  - Process: @{items('For_each_Evidence')?['imageFile']?['fileName']} by @{coalesce(items('For_each_Evidence')?['userAccount']?['displayName'], items('For_each_Evidence')?['userAccount']?['accountName'], 'N/A')}\n"
+                                                                }
+                                                            }
+                                                        }
+                                                    },
+                                                    "#microsoft.graph.security.registryKeyEvidence": {
+                                                        "case": "#microsoft.graph.security.registryKeyEvidence",
+                                                        "actions": {
+                                                            "Append_Registry_Evidence": {
+                                                                "type": "AppendToStringVariable",
+                                                                "inputs": {
+                                                                    "name": "EvidenceTimeline",
+                                                                    "value": "  - Registry: @{items('For_each_Evidence')?['registryHive']}\\@{items('For_each_Evidence')?['registryKey']}\n"
+                                                                }
+                                                            }
+                                                        }
+                                                    },
+                                                    "#microsoft.graph.security.urlEvidence": {
+                                                        "case": "#microsoft.graph.security.urlEvidence",
+                                                        "actions": {
+                                                            "Append_URL_Evidence": {
+                                                                "type": "AppendToStringVariable",
+                                                                "inputs": {
+                                                                    "name": "EvidenceTimeline",
+                                                                    "value": "  - URL: @{items('For_each_Evidence')?['url']} (Verdict: @{coalesce(items('For_each_Evidence')?['verdict'], 'N/A')})\n"
+                                                                }
+                                                            }
+                                                        }
+                                                    },
+                                                    "#microsoft.graph.security.userEvidence": {
+                                                        "case": "#microsoft.graph.security.userEvidence",
+                                                        "actions": {
+                                                            "Append_User_Evidence": {
+                                                                "type": "AppendToStringVariable",
+                                                                "inputs": {
+                                                                    "name": "EvidenceTimeline",
+                                                                    "value": "  - User: @{coalesce(items('For_each_Evidence')?['userAccount']?['displayName'], items('For_each_Evidence')?['userAccount']?['accountName'], 'N/A')}\n"
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                "default": {
+                                                    "actions": {}
+                                                },
+                                                "expression": "@coalesce(items('For_each_Evidence')?['@@odata.type'], 'Unknown')",
+                                                "type": "Switch"
+                                            }
+                                        },
+                                        "runAfter": {
+                                            "Append_Alert_Details": [
+                                                "Succeeded"
+                                            ]
+                                        },
+                                        "type": "Foreach"
+                                    },
+                                    "Handle_MITRE_Techniques": {
+                                        "runAfter": {
+                                            "For_each_Evidence": [
+                                                "Succeeded"
+                                            ]
+                                        },
+                                        "type": "Compose",
+                                        "inputs": "@{if(empty(items('For_each_Alert')?['mitreTechniques']), '', concat('  MITRE: ', join(items('For_each_Alert')?['mitreTechniques'], ', ')))}"
+                                    },
+                                    "Append_MITRE_if_exists": {
+                                        "actions": {
+                                            "Append_MITRE_String": {
+                                                "type": "AppendToStringVariable",
+                                                "inputs": {
+                                                    "name": "EvidenceTimeline",
+                                                    "value": "@{outputs('Handle_MITRE_Techniques')}\n"
+                                                }
+                                            }
+                                        },
+                                        "runAfter": {
+                                            "Handle_MITRE_Techniques": [
+                                                "Succeeded"
+                                            ]
+                                        },
+                                        "expression": {
+                                            "and": [
+                                                {
+                                                    "not": {
+                                                        "equals": [
+                                                            "@outputs('Handle_MITRE_Techniques')",
+                                                            ""
+                                                        ]
+                                                    }
+                                                }
+                                            ]
+                                        },
+                                        "type": "If"
+                                    },
+                                    "Add_Alert_Separator": {
+                                        "runAfter": {
+                                            "Append_MITRE_if_exists": [
+                                                "Succeeded"
+                                            ]
+                                        },
+                                        "type": "AppendToStringVariable",
+                                        "inputs": {
+                                            "name": "EvidenceTimeline",
+                                            "value": "\n"
+                                        }
+                                    }
+                                },
+                                "else": {
+                                    "actions": {}
+                                },
+                                "expression": {
+                                    "and": [
+                                        {
+                                            "equals": [
+                                                "@formatDateTime(items('For_each_Alert')?['createdDateTime'], 'yyyy-MM-dd')",
+                                                "@formatDateTime(items('For_each_High_Incident')?['createdDateTime'], 'yyyy-MM-dd')"
+                                            ]
+                                        }
+                                    ]
+                                },
+                                "type": "If"
+                            }
+                        },
+                        "runAfter": {
+                            "Initialize_MITRE_String": [
+                                "Succeeded"
+                            ]
+                        },
+                        "type": "Foreach"
+                    },
+                    "Check_If_Evidence_Exists": {
+                        "actions": {
+                            "Post_message": {
+                                "type": "ApiConnection",
+                                "inputs": {
+                                    "host": {
+                                        "connection": {
+                                            "name": "@parameters('$connections')['teams']['connectionId']"
+                                        }
+                                    },
+                                    "method": "post",
+                                    "body": {
+                                        "subject": "🚨 HIGH SEVERITY INCIDENT: @{coalesce(items('For_each_High_Incident')?['displayName'], concat('Incident ', items('For_each_High_Incident')?['id']))}",
+                                        "body": {
+                                            "content": "<div style='font-family: Arial, sans-serif;'>\n<h2 style='color: #d9534f;'>🚨 HIGH SEVERITY INCIDENT DETECTED</h2>\n\n<div style='background-color: #f5f5f5; padding: 15px; border-radius: 5px; margin-bottom: 20px;'>\n<h3>Incident Details</h3>\n<table style='width: 100%;'>\n<tr><td style='font-weight: bold; width: 150px;'>Incident:</td><td>@{coalesce(items('For_each_High_Incident')?['displayName'], 'Unnamed Incident')}</td></tr>\n<tr><td style='font-weight: bold;'>ID:</td><td>@{items('For_each_High_Incident')?['id']}</td></tr>\n<tr><td style='font-weight: bold;'>Severity:</td><td><span style='color: #d9534f; font-weight: bold;'>@{items('For_each_High_Incident')?['severity']}</span></td></tr>\n<tr><td style='font-weight: bold;'>Status:</td><td>@{items('For_each_High_Incident')?['status']}</td></tr>\n<tr><td style='font-weight: bold;'>Created:</td><td>@{formatDateTime(items('For_each_High_Incident')?['createdDateTime'], 'yyyy-MM-dd hh:mm tt')}</td></tr>\n<tr><td style='font-weight: bold;'>Last Updated:</td><td>@{formatDateTime(items('For_each_High_Incident')?['lastUpdateDateTime'], 'yyyy-MM-dd hh:mm tt')}</td></tr>\n<tr><td style='font-weight: bold;'>Assigned To:</td><td>@{coalesce(items('For_each_High_Incident')?['assignedTo'], 'Unassigned')}</td></tr>\n<tr><td style='font-weight: bold;'>Classification:</td><td>@{coalesce(items('For_each_High_Incident')?['classification'], 'Unclassified')}</td></tr>\n</table>\n</div>\n\n<div style='background-color: #f5f5f5; padding: 15px; border-radius: 5px; margin-bottom: 20px;'>\n<p><strong>Description:</strong> @{coalesce(items('For_each_High_Incident')?['description'], items('For_each_High_Incident')?['summary'], 'No description available')}</p>\n<p><strong>Last Modified By:</strong> @{coalesce(items('For_each_High_Incident')?['lastModifiedBy'], 'System')}</p>\n<p><strong>Determination:</strong> @{coalesce(items('For_each_High_Incident')?['determination'], 'Under Investigation')}</p>\n</div>\n\n<div style='background-color: #e8f5e9; padding: 15px; border-radius: 5px; margin-bottom: 20px;'>\n<h3>🔎 Attack Story Timeline</h3>\n<pre style='white-space: pre-wrap; font-family: Consolas, monospace;'>@{variables('EvidenceTimeline')}</pre>\n</div>\n\n<div style='margin-top: 20px;'>\n<a href='@{coalesce(items('For_each_High_Incident')?['incidentWebUrl'], concat('https://security.microsoft.com/incidents/', items('For_each_High_Incident')?['id']))}' style='background-color: #0078d4; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block; margin-right: 10px;'>🔗 View Incident Details</a>\n<a href='https://security.microsoft.com/incidents/@{items('For_each_High_Incident')?['id']}' style='background-color: #0078d4; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;'>📋 Open SIEM Dashboard</a>\n</div>\n</div>",
+                                            "contentType": "html"
+                                        },
+                                        "groupId": "be712335-429a-4274-a3de-d582eeec0906",
+                                        "channelId": "19:6fe67c25131d41f6b1d6e6b51d04d82a@thread.tacv2"
+                                    },
+                                    "path": "/beta/teams/@{encodeURIComponent('be712335-429a-4274-a3de-d582eeec0906')}/channels/@{encodeURIComponent('19:6fe67c25131d41f6b1d6e6b51d04d82a@thread.tacv2')}/messages"
+                                }
+                            }
+                        },
+                        "runAfter": {
+                            "For_each_Alert": [
+                                "Succeeded"
+                            ]
+                        },
+                        "else": {
+                            "actions": {}
+                        },
+                        "expression": {
+                            "and": [
+                                {
+                                    "greater": [
+                                        "@length(variables('EvidenceTimeline'))",
+                                        0
+                                    ]
+                                }
+                            ]
+                        },
+                        "type": "If"
+                    }
+                },
+                "runAfter": {
+                    "Initialize_variables": [
+                        "Succeeded"
+                    ]
+                },
+                "type": "Foreach"
+            }
+        },
+        "outputs": {},
+        "parameters": {
+            "$connections": {
+                "type": "Object",
+                "defaultValue": {}
+            }
+        }
+    },
+    "parameters": {
+        "$connections": {
+            "type": "Object",
+            "value": {
+                "teams": {
+                    "id": "/subscriptions/be32fada-aec2-4ccf-8e5d-cb0b3e41fb3c/providers/Microsoft.Web/locations/westus2/managedApis/teams",
+                    "connectionId": "/subscriptions/be32fada-aec2-4ccf-8e5d-cb0b3e41fb3c/resourceGroups/mde-soc-dashboard/providers/Microsoft.Web/connections/teams",
+                    "connectionName": "teams"
+                }
+            }
+        }
+    }
+}
